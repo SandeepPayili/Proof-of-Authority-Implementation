@@ -45,12 +45,16 @@ class Blockchain:
         valid_transactions = []
         for transaction in self.transaction_pool:
             peer_sender = None  # neglecting double spending condition
+            peer_receiver = None
             for i in range(len(self.peers)):
                 if transaction['sender'] == self.peers[i]['public_key']:
                     peer_sender = i
-                    break
-            if transaction['amount'] > self.peers[peer_sender]['amount'] or peer_sender == None:
+                if transaction['receiver'] == self.peers[i]['public_key']:
+                    peer_receiver = i
+            if transaction['amount'] > self.peers[peer_sender]['amount'] or peer_sender == None or peer_receiver == None:
                 continue  # skip the transaction
+            self.peers[peer_sender]['amount'] -= transaction['amount']
+            self.peers[peer_receiver]['amount'] += transaction['amount']
             valid_transactions.append(transaction)
         new_block = {
             "transactions": valid_transactions,
